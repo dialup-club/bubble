@@ -2,11 +2,11 @@
 <html lang="zh">   <!-- data-skin 由 bubble-colors.js 自动挂上 -->
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>示范 · 披皮之后</title>
+<title>示范 · 装皮肤之后</title>
 <style>
   /* 宿主自己的样式。和 before.html 相比改了两处（都标了 ★）：
-     ★1 消息行和气泡的规则前面加了 html:not([data-skin])，给皮让路（AGENTS.md 步骤 4）
-     ★2 披皮以后，宿主自己的顶栏和输入框藏起来，换成皮的；消息列表底部给固定在底下的输入条留出位置 */
+     ★1 消息行和气泡的规则前面加了 html:not([data-skin])，给皮肤让路（AGENTS.md 步骤 4）
+     ★2 装上皮肤以后，宿主自己的顶栏和输入框藏起来，换成皮肤的；消息列表底部给固定在底下的输入条留出位置 */
   html, body{ height:100%; }
   body{ margin:0; font-family: Georgia, serif; background:#fafafa; display:flex; flex-direction:column; }
   header.bar{ padding:14px 16px; background:#222; color:#fff; font-size:18px; }
@@ -23,7 +23,7 @@
   html[data-skin] header.bar, html[data-skin] form#f{ display:none; }
   html[data-skin] ul#log{ padding:10px 4px calc(64px + env(safe-area-inset-bottom)); background:#dbe2ed; }
 </style>
-<!-- 皮：颜色脚本放 head 里同步加载；样式放在宿主自己的样式之后 -->
+<!-- 皮肤：颜色脚本放 head 里同步加载；样式放在宿主自己的样式之后 -->
 <script src="../../skin/bubble-colors.js"></script>
 <link rel="stylesheet" href="../../skin/ios4.css">
 <link rel="stylesheet" href="../../skin/ios4-bars.css">
@@ -32,7 +32,7 @@
 <body>
 <header class="bar">Chat with Alex</header>
 
-<!-- 皮的顶栏：结构照抄自本仓库 index.html。右上角「设置」加了 data-skin-open，点了滑出皮的设置页 -->
+<!-- 皮肤的顶栏：结构照抄自本仓库 index.html。右上角「设置」加了 data-skin-open，点了滑出皮肤的设置页 -->
 <header class="topbar">
   <button class="backbtn" id="backBtn" aria-label="返回">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -50,7 +50,7 @@
 <ul id="log"></ul>
 <form id="f"><input id="t" placeholder="Type a message" autocomplete="off"><button>Send</button></form>
 
-<!-- 皮的输入条：结构照抄自本仓库 index.html -->
+<!-- 皮肤的输入条：结构照抄自本仓库 index.html -->
 <footer class="composer">
   <div class="field">
     <button class="floatbtn clip-in-field" id="addBtn" aria-label="添加" title="添加">
@@ -72,7 +72,7 @@ function addWhen(text){ var li = document.createElement("li"); li.className = "w
 function addMessage(from, text){
   var li = document.createElement("li"); li.dataset.from = from;
   var p = document.createElement("p"); p.textContent = text; li.append(p);
-  /* ★ 接法 A（AGENTS.md 步骤 3）：在画消息的地方补上皮认的 class。
+  /* ★ 接法 A（AGENTS.md 步骤 3）：在画消息的地方补上皮肤认的 class。
        同一个人连着发：新的一条有尾巴（tail）并且挨近上一条（grouped），上一条的尾巴拿掉。 */
   var prev = log.lastElementChild, same = prev && prev.dataset.from === from;
   li.className = "row " + (from === "me" ? "human" : "ai") + " tail" + (same ? " grouped" : "");
@@ -85,7 +85,7 @@ document.getElementById("f").addEventListener("submit", function(e){ e.preventDe
 addWhen("Today 09:41");
 [["them","Hi"],["me","你好"],["them","今天天气不错。要不要出去走走？"],["them","我刚看完一本书，晚点可以跟你讲讲。这本书讲的是一个人在海边住了一年的事，写得很慢，但是读着读着就不想放下。"],["me","好呀"],["me","等我五分钟"]].forEach(function(m){ addMessage(m[0], m[1]); });
 
-/* ★ 把皮的输入条接到宿主自己的 send() 上 */
+/* ★ 把皮肤的输入条接到宿主自己的 send() 上 */
 (function(){
   var input = document.getElementById("input"), btn = document.getElementById("sendBtn");
   function go(){ var v = input.value; input.value = ""; send(v); }
@@ -94,7 +94,7 @@ addWhen("Today 09:41");
 })();
 </script>
 
-<!-- ▼ 皮 · 选色页（Bubble Color › My Bubbles / His Bubbles）：移植时整段照抄，id 不要改 -->
+<!-- ▼ 皮肤 · 选色页（Bubble Color › My Bubbles / His Bubbles）：移植时整段照抄，id 不要改 -->
 <div class="profile-panel bubble-panel hidden" id="bubblePanel" role="dialog" aria-modal="true" aria-label="Bubble Color">
   <div class="profile-page">
     <div class="profile-topbar" id="bubbleTopbar" data-title="My Bubbles">
@@ -151,9 +151,9 @@ addWhen("Today 09:41");
   </div>
 </div>
 
-<!-- ▲ 皮 · 选色页 结束 -->
+<!-- ▲ 皮肤 · 选色页 结束 -->
 
-<!-- ▼ 皮 · 设置页（Bubble Color、Wallpaper、聊天方式三组）：可以整块照抄，也可以只把里面的 <section> 搬进宿主自己的设置页（外面要有一层 id="profilePanel"） -->
+<!-- ▼ 皮肤 · 设置页（Bubble Color、Wallpaper、聊天方式三组）：可以整块照抄，也可以只把里面的 <section> 搬进宿主自己的设置页（外面要有一层 id="profilePanel"） -->
 <div class="profile-panel hidden" id="profilePanel" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
   <div class="profile-page">
     <div class="profile-topbar">
@@ -199,7 +199,7 @@ addWhen("Today 09:41");
   </div>
 </div>
 
-<!-- ▲ 皮 · 设置页 结束 -->
+<!-- ▲ 皮肤 · 设置页 结束 -->
 
 <script src="../../skin/bubble-settings.js"></script>
 </body></html>

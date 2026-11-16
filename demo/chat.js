@@ -94,7 +94,7 @@ function splitSms(text){
   return out.length ? out : [t];
 }
 
-/* 聊天方式（发短信 / 在身边）的开关逻辑在 skin/bubble-settings.js，是皮的一部分；当前值用 window.DialupBubble.chatStyle() / textingOn() 读。 */
+/* 聊天方式（发短信 / 在身边）的开关逻辑在 skin/bubble-settings.js，是皮肤的一部分；当前值用 window.DialupBubble.chatStyle() / textingOn() 读。 */
 
 /* ── 示例对话（内容中性，时间钉在今天 09:41 起） ── */
 const _b = new Date(); _b.setHours(9, 41, 0, 0);
@@ -274,7 +274,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !profilePanel.classList.contains("hidden")) closeProfile();
 });
 
-/* 选色页（Bubble Color）和壁纸（Wallpaper）的界面逻辑在 skin/bubble-settings.js，是皮的一部分，不在这里。 */
+/* 选色页（Bubble Color）和壁纸（Wallpaper）的界面逻辑在 skin/bubble-settings.js，是皮肤的一部分，不在这里。 */
 
 /* ── 布局用的几个变量：屏幕高、输入条实际高度、键盘弹起的偏移 ── */
 function applyPhysicalScreenVars(){

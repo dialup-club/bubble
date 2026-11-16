@@ -3,7 +3,7 @@
 
 /* ── 面板的地基 ──
    设置页和选色页都是一块盖满屏幕的面板（.profile-panel）：平时 .hidden，打开时去掉 .hidden 再加 .open 从右边滑进来。
-   宿主的骨头没给这些也能站住；值和本仓库 demo 骨头里的一样，两边都有也不冲突。 */
+   宿主没给这些也能站住；值和本仓库 demo 页面里的一样，两边都有也不冲突。 */
 :where(:root[data-skin^="ios4"]) :is(.profile-panel, .profile-panel *){
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;

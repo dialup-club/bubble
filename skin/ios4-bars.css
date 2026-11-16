@@ -2,14 +2,14 @@
    可选。要先加载 ios4.css（变量在那里）。认的结构见 AGENTS.md。 */
 
 /* ── 顶栏和输入条的地基 ──
-   皮单独拿去披在别的前端上时，顶栏里三样东西怎么摆、输入条里的输入框和按钮怎么排，靠的是这一段。
-   内容和本仓库 demo 骨头里的同名规则一样（:where() 让它的优先级也一样低），所以 demo 里两边都有也不冲突，后面的规则照样盖过它。 */
+   皮肤单独拿去装在别的前端上时，顶栏里三样东西怎么摆、输入条里的输入框和按钮怎么排，靠的是这一段。
+   内容和本仓库 demo 页面里的同名规则一样（:where() 让它的优先级也一样低），所以 demo 里两边都有也不冲突，后面的规则照样盖过它。 */
 :where(:root[data-skin^="ios4"]) :is(.topbar, .topbar *, .composer, .composer *){
   box-sizing: border-box;            /* 宿主没有全局的 border-box 时，输入框会变高、发送键会被挤出去 */
   -webkit-tap-highlight-color: transparent;
 }
 :where(:root[data-skin^="ios4"]){
-  --side-pad: 16px;            /* 宿主没定义这几个量时的备用值；宿主（或 demo 骨头）自己定义了就用它自己的 */
+  --side-pad: 16px;            /* 宿主没定义这几个量时的备用值；宿主（或 demo 页面）自己定义了就用它自己的 */
   --ref-width: 100vw;
   --keyboard-offset: 0px;
 }

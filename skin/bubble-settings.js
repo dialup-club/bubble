@@ -204,7 +204,7 @@ syncWallRows();
 
 /* ── 聊天方式（设置页「聊天方式」）──
    text = 发短信 / near = 在身边。这个开关只管「对方怎么说」，不管气泡：两种方式拆气泡都一样（splitSms）。
-   它自己不会让对方换一种说话方式——皮只负责记下选择（localStorage companion_ios_style）并把当前值交出来：
+   它自己不会让对方换一种说话方式——皮肤只负责记下选择（localStorage companion_ios_style）并把当前值交出来：
    window.DialupBubble.chatStyle() 返回 "text" | "near"，textingOn() 返回 true | false。
    宿主怎么用：发消息给自己的后端 / 模型时带上这个值，选了「发短信」就在系统提示里加一段「像隔着手机发短信那样说话」的规则，
    选了「在身边」就不加。那段规则怎么写由宿主自己定，不在本仓库里。 */
