@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>示范 · 披皮之前</title>
+<style>
+  /* 一个随手写的聊天页，代表「别人的前端」：结构、class 名都和这套皮不一样 */
+  html, body{ height:100%; }
+  body{ margin:0; font-family: Georgia, serif; background:#fafafa; display:flex; flex-direction:column; }
+  header.bar{ padding:14px 16px; background:#222; color:#fff; font-size:18px; }
+  ul#log{ list-style:none; margin:0; padding:12px; flex:1; overflow:auto; }
+  ul#log li{ margin:6px 0; }
+  ul#log li p{ display:inline-block; margin:0; padding:8px 12px; border-radius:6px; background:#e5e5e5; max-width:70%; }
+  ul#log li[data-from="me"]{ text-align:right; }
+  ul#log li[data-from="me"] p{ background:#cfe8ff; }
+  ul#log li.when{ text-align:center; color:#999; font-size:12px; }
+  form#f{ display:flex; gap:8px; padding:10px; border-top:1px solid #ddd; background:#fff; }
+  form#f input{ flex:1; padding:8px; font-size:15px; }
+</style>
+</head>
+<body>
+<header class="bar">Chat with Alex</header>
+<ul id="log"></ul>
+<form id="f"><input id="t" placeholder="Type a message" autocomplete="off"><button>Send</button></form>
+<script>
+/* 宿主自己的逻辑：画一条消息、发送。真实的前端在这里会去请求自己的后端。 */
+var log = document.getElementById("log");
+function addWhen(text){ var li = document.createElement("li"); li.className = "when"; li.textContent = text; log.append(li); }
+function addMessage(from, text){
+  var li = document.createElement("li"); li.dataset.from = from;
+  var p = document.createElement("p"); p.textContent = text; li.append(p);
+  log.append(li); log.scrollTop = log.scrollHeight;
+}
+function send(text){ if (!text.trim()) return; addMessage("me", text); setTimeout(function(){ addMessage("them", "Sure, take your time."); }, 900); }
+document.getElementById("f").addEventListener("submit", function(e){ e.preventDefault(); var t = document.getElementById("t"); send(t.value); t.value = ""; });
+addWhen("Today 09:41");
+[["them","Hi"],["me","你好"],["them","今天天气不错。要不要出去走走？"],["them","我刚看完一本书，晚点可以跟你讲讲。这本书讲的是一个人在海边住了一年的事，写得很慢，但是读着读着就不想放下。"],["me","好呀"],["me","等我五分钟"]].forEach(function(m){ addMessage(m[0], m[1]); });
+</script>
+</body></html>

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh">   <!-- data-skin 由 bubble-colors.js 自动挂上 -->
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>示范 · 披皮之后</title>
+<style>
+  /* 宿主自己的样式。和 before.html 相比改了两处（都标了 ★）：
+     ★1 消息行和气泡的规则前面加了 html:not([data-skin])，给皮让路（AGENTS.md 步骤 4）
+     ★2 披皮以后，宿主自己的顶栏和输入框藏起来，换成皮的；消息列表底部给固定在底下的输入条留出位置 */
+  html, body{ height:100%; }
+  body{ margin:0; font-family: Georgia, serif; background:#fafafa; display:flex; flex-direction:column; }
+  header.bar{ padding:14px 16px; background:#222; color:#fff; font-size:18px; }
+  ul#log{ list-style:none; margin:0; padding:12px; flex:1; overflow:auto; }
+  /* ★1 */
+  html:not([data-skin]) ul#log li{ margin:6px 0; }
+  html:not([data-skin]) ul#log li p{ display:inline-block; margin:0; padding:8px 12px; border-radius:6px; background:#e5e5e5; max-width:70%; }
+  html:not([data-skin]) ul#log li[data-from="me"]{ text-align:right; }
+  html:not([data-skin]) ul#log li[data-from="me"] p{ background:#cfe8ff; }
+  html:not([data-skin]) ul#log li.when{ text-align:center; color:#999; font-size:12px; }
+  form#f{ display:flex; gap:8px; padding:10px; border-top:1px solid #ddd; background:#fff; }
+  form#f input{ flex:1; padding:8px; font-size:15px; }
+  /* ★2 */
+  html[data-skin] header.bar, html[data-skin] form#f{ display:none; }
+  html[data-skin] ul#log{ padding:10px 4px calc(64px + env(safe-area-inset-bottom)); background:#dbe2ed; }
+</style>
+<!-- 皮：颜色脚本放 head 里同步加载；样式放在宿主自己的样式之后 -->
+<script src="../../skin/bubble-colors.js"></script>
+<link rel="stylesheet" href="../../skin/ios4.css">
+<link rel="stylesheet" href="../../skin/ios4-bars.css">
+<link rel="stylesheet" href="../../skin/ios4-settings.css">
+</head>
+<body>
+<header class="bar">Chat with Alex</header>
+
+<!-- 皮的顶栏：结构照抄自本仓库 index.html。右上角「设置」加了 data-skin-open，点了滑出皮的设置页 -->
+<header class="topbar">
+  <button class="backbtn" id="backBtn" aria-label="返回">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <div class="peerpill">
+    <span class="name" id="peerName">Alex</span>
+    <span class="status" id="status"></span>
+  </div>
+  <div class="header-actions" aria-label="更多操作">
+    <button class="topbtn more" id="moreBtn" type="button" data-skin-open="profilePanel" aria-label="设置" title="设置">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+    </button>
+  </div>
+</header>
+<ul id="log"></ul>
+<form id="f"><input id="t" placeholder="Type a message" autocomplete="off"><button>Send</button></form>
+
+<!-- 皮的输入条：结构照抄自本仓库 index.html -->
+<footer class="composer">
+  <div class="field">
+    <button class="floatbtn clip-in-field" id="addBtn" aria-label="添加" title="添加">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <textarea id="input" rows="1" placeholder="Write a letter..." enterkeyhint="enter"></textarea>
+    <button class="emojibtn" id="emojiBtn" aria-label="表情" title="表情">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.3a4.2 4.2 0 0 0 7 0"/><line x1="9" y1="9.3" x2="9" y2="10"/><line x1="15" y1="9.3" x2="15" y2="10"/></svg>
+    </button>
+  </div>
+  <button class="floatbtn send" id="sendBtn" aria-label="发送">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6.5 10.5L12 5l5.5 5.5"/></svg>
+  </button>
+</footer>
+<script>
+/* 宿主自己的逻辑：画一条消息、发送。真实的前端在这里会去请求自己的后端。 */
+var log = document.getElementById("log");
+function addWhen(text){ var li = document.createElement("li"); li.className = "when day stamp"; li.textContent = text; log.append(li); }   // ★ 补上 day stamp
+function addMessage(from, text){
+  var li = document.createElement("li"); li.dataset.from = from;
+  var p = document.createElement("p"); p.textContent = text; li.append(p);
+  /* ★ 接法 A（AGENTS.md 步骤 3）：在画消息的地方补上皮认的 class。
+       同一个人连着发：新的一条有尾巴（tail）并且挨近上一条（grouped），上一条的尾巴拿掉。 */
+  var prev = log.lastElementChild, same = prev && prev.dataset.from === from;
+  li.className = "row " + (from === "me" ? "human" : "ai") + " tail" + (same ? " grouped" : "");
+  p.className = "bubble";
+  if (same) prev.classList.remove("tail");
+  log.append(li); log.scrollTop = log.scrollHeight;
+}
+function send(text){ if (!text.trim()) return; addMessage("me", text); setTimeout(function(){ addMessage("them", "Sure, take your time."); }, 900); }
+document.getElementById("f").addEventListener("submit", function(e){ e.preventDefault(); var t = document.getElementById("t"); send(t.value); t.value = ""; });
+addWhen("Today 09:41");
+[["them","Hi"],["me","你好"],["them","今天天气不错。要不要出去走走？"],["them","我刚看完一本书，晚点可以跟你讲讲。这本书讲的是一个人在海边住了一年的事，写得很慢，但是读着读着就不想放下。"],["me","好呀"],["me","等我五分钟"]].forEach(function(m){ addMessage(m[0], m[1]); });
+
+/* ★ 把皮的输入条接到宿主自己的 send() 上 */
+(function(){
+  var input = document.getElementById("input"), btn = document.getElementById("sendBtn");
+  function go(){ var v = input.value; input.value = ""; send(v); }
+  btn.addEventListener("click", go);
+  input.addEventListener("keydown", function(e){ if (e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); go(); } });
+})();
+</script>
+
+<!-- ▼ 皮 · 选色页（Bubble Color › My Bubbles / His Bubbles）：移植时整段照抄，id 不要改 -->
+<div class="profile-panel bubble-panel hidden" id="bubblePanel" role="dialog" aria-modal="true" aria-label="Bubble Color">
+  <div class="profile-page">
+    <div class="profile-topbar" id="bubbleTopbar" data-title="My Bubbles">
+      <button class="profile-back" id="bubbleClose" type="button" aria-label="返回" data-back="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+    </div>
+    <div class="profile-scroll">
+      <div class="bp-preview" aria-hidden="true">
+        <div class="row ai tail"><div class="bubble"><span class="txt">Hi</span></div></div>
+        <div class="row human tail"><div class="bubble"><span class="txt">你好</span></div></div>
+      </div>
+      <div id="bubbleList"></div>
+      <div class="bp-group bp-opacity">
+        <div class="bp-head">Opacity</div>
+        <div class="bp-cells">
+          <div class="bp-slider">
+            <input type="range" id="bubbleOpacity" min="20" max="100" step="1" value="100" aria-label="Opacity">
+            <span class="bp-slider-v" id="bubbleOpacityVal">100%</span>
+          </div>
+        </div>
+        <div class="bp-foot">往左拉，气泡本身变透明，能看见后面的壁纸。最右边 = 不透明。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 壁纸页（Wallpaper）：自带的几张 + 从自己设备里选 -->
+<div class="profile-panel bubble-panel hidden" id="wallPanel" role="dialog" aria-modal="true" aria-label="Wallpaper">
+  <div class="profile-page">
+    <div class="profile-topbar" id="wallTopbar" data-title="Wallpaper">
+      <button class="profile-back" type="button" data-skin-close aria-label="返回" data-back="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+    </div>
+    <div class="profile-scroll">
+      <div class="bp-group">
+        <div class="bp-cells"><div class="wp-grid" id="wallGrid"></div></div>
+      </div>
+      <div class="bp-group">
+        <div class="bc-cells">
+          <label class="bc-row wp-pick">
+            <span class="bc-k">Choose Photo</span><span class="bc-v" id="wallVal"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+            <input type="file" accept="image/*" id="wallFile" class="wp-file" aria-label="Choose Photo">
+          </label>
+          <button class="bc-row" type="button" id="wallReset" hidden>
+            <span class="bc-k">Reset to Default</span>
+          </button>
+        </div>
+        <div class="bp-foot" id="wallHint">自己选的图片只存在你这台设备的浏览器里，不会上传到任何地方。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ▲ 皮 · 选色页 结束 -->
+
+<!-- ▼ 皮 · 设置页（Bubble Color、Wallpaper、聊天方式三组）：可以整块照抄，也可以只把里面的 <section> 搬进宿主自己的设置页（外面要有一层 id="profilePanel"） -->
+<div class="profile-panel hidden" id="profilePanel" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <div class="profile-page">
+    <div class="profile-topbar">
+      <button class="profile-back" id="profileClose" type="button" data-skin-close aria-label="返回">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 id="profileTitle" class="hidden">设置</h2>
+    </div>
+    <div class="profile-scroll">
+      <section class="settings-card bubble-color-card" data-skin-only="ios4">
+        <div class="settings-label">Bubble Color</div>
+        <div class="bc-cells">
+          <button class="bc-row" type="button" data-side="me">
+            <span class="bc-k">My Bubbles</span><span class="bc-v" id="bubbleMeVal">iMessage</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button class="bc-row" type="button" data-side="him">
+            <span class="bc-k">His Bubbles</span><span class="bc-v" id="bubbleHimVal">Default</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-card wallpaper-card" data-skin-only="ios4">
+        <div class="settings-label">Wallpaper</div>
+        <div class="bc-cells">
+          <button class="bc-row" type="button" data-skin-open="wallPanel">
+            <span class="bc-k">Choose Wallpaper</span><span class="bc-v" id="wallName">Default</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-card" data-skin-only="ios4">
+        <div class="settings-label">聊天方式</div>
+        <div class="segmented" id="chatStyleSeg" role="group" aria-label="聊天方式">
+          <button type="button" data-val="text" class="active">发短信</button>
+          <button type="button" data-val="near">在身边</button>
+        </div>
+        <div class="push-hint" id="chatStyleHint"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ▲ 皮 · 设置页 结束 -->
+
+<script src="../../skin/bubble-settings.js"></script>
+</body></html>

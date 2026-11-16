@@ -1,0 +1,57 @@
+Dialup Club Bubble · 使用条款
+Copyright (c) 2026 dialup-club. 保留所有权利。
+
+本项目仅供爱好者个人交流使用。你可以在遵守下面全部条件的前提下使用它：
+
+1. 自用和自改
+   你可以为自己使用而下载、安装本项目，并且可以任意修改，不需要事先征得同意。
+
+2. 不得搬运和转发
+   未经许可，不得把本项目的全部或一部分（不论是原样的还是修改过的）重新发布、转载、上传到其他平台或仓库，
+   也不得打包后私下传给他人。想让别人用，请分享本仓库的链接。
+
+3. 修改后的公开发布
+   修改后的版本如果想公开发布或在群组里分享，必须事先通过本仓库的 Issues 联系并取得同意，
+   发布时须注明出处（本仓库的链接）。
+
+4. 不得商用
+   不得出售本项目或其修改版，不得把它放进任何收费的产品或服务里，不得用它为其他平台或账号引流。
+
+5. 无担保
+   本项目按「现状」提供，不附带任何明示或暗示的担保。因使用本项目产生的任何问题，作者不承担责任。
+
+不遵守以上任何一条，本条款给予你的许可即自动终止。
+
+In short (English): personal, non-commercial use only. You may modify it for your own use. Do not
+redistribute or re-upload it, modified or not; share the link to this repository instead. Ask via Issues
+before publishing a modified version, and credit this repository. No warranty.
+
+--------------------------------------------------------------------------------
+
+demo/base.css、demo/chat.js 和 index.html 中有一部分代码沿用自 Tidal_Echo
+(https://github.com/anhe2021212-spec/Tidal_Echo) 2026 年 6 月的版本，该版本以 MIT 许可证发布：
+
+    MIT License
+    Copyright (c) 2026 Companion Channel contributors
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+--------------------------------------------------------------------------------
+
+skin/wallpapers/ 里的图片是第三方作品，不属于本项目，也不在上述条款授予的许可之内，来源见 skin/wallpapers/来源.txt。

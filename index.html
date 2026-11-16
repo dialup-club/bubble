@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-skin="ios4">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Dialup Club Bubble · demo</title>
+<meta name="theme-color" content="#bec8d5">
+<link rel="icon" href="data:,">
+<script src="skin/bubble-colors.js"></script>
+<link rel="stylesheet" href="demo/base.css">
+<link rel="stylesheet" href="skin/ios4.css">
+<link rel="stylesheet" href="skin/ios4-bars.css">
+<link rel="stylesheet" href="skin/ios4-settings.css">
+</head>
+<body>
+
+<div class="wall" id="wall"></div>
+<div class="app" id="app" data-conn="online">
+  <!-- ▼ 皮 · 顶栏：移植时整段照抄 -->
+  <header class="topbar">
+    <button class="backbtn" id="backBtn" aria-label="返回">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="peerpill">
+      <span class="name" id="peerName">Alex</span>
+      <span class="status" id="status"></span>
+    </div>
+    <div class="header-actions" aria-label="更多操作">
+      <button class="topbtn more" id="moreBtn" type="button" aria-label="设置" title="设置">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+      </button>
+    </div>
+  </header>
+  <!-- ▲ 皮 · 顶栏 结束 -->
+  <main class="scroll" id="scroll"></main>
+  <!-- ▼ 皮 · 输入条：移植时整段照抄 -->
+  <footer class="composer">
+    <div class="field">
+      <button class="floatbtn clip-in-field" id="addBtn" aria-label="添加" title="添加">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <textarea id="input" rows="1" placeholder="Write a letter..." enterkeyhint="enter"></textarea>
+      <button class="emojibtn" id="emojiBtn" aria-label="表情" title="表情">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.3a4.2 4.2 0 0 0 7 0"/><line x1="9" y1="9.3" x2="9" y2="10"/><line x1="15" y1="9.3" x2="15" y2="10"/></svg>
+      </button>
+    </div>
+    <button class="floatbtn send" id="sendBtn" aria-label="发送">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6.5 10.5L12 5l5.5 5.5"/></svg>
+    </button>
+  </footer>
+  <!-- ▲ 皮 · 输入条 结束 -->
+</div>
+
+<!-- ▼ 皮 · 选色页（Bubble Color › My Bubbles / His Bubbles）：移植时整段照抄，id 不要改 -->
+<div class="profile-panel bubble-panel hidden" id="bubblePanel" role="dialog" aria-modal="true" aria-label="Bubble Color">
+  <div class="profile-page">
+    <div class="profile-topbar" id="bubbleTopbar" data-title="My Bubbles">
+      <button class="profile-back" id="bubbleClose" type="button" aria-label="返回" data-back="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+    </div>
+    <div class="profile-scroll">
+      <div class="bp-preview" aria-hidden="true">
+        <div class="row ai tail"><div class="bubble"><span class="txt">Hi</span></div></div>
+        <div class="row human tail"><div class="bubble"><span class="txt">你好</span></div></div>
+      </div>
+      <div id="bubbleList"></div>
+      <div class="bp-group bp-opacity">
+        <div class="bp-head">Opacity</div>
+        <div class="bp-cells">
+          <div class="bp-slider">
+            <input type="range" id="bubbleOpacity" min="20" max="100" step="1" value="100" aria-label="Opacity">
+            <span class="bp-slider-v" id="bubbleOpacityVal">100%</span>
+          </div>
+        </div>
+        <div class="bp-foot">往左拉，气泡本身变透明，能看见后面的壁纸。最右边 = 不透明。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 壁纸页（Wallpaper）：自带的几张 + 从自己设备里选 -->
+<div class="profile-panel bubble-panel hidden" id="wallPanel" role="dialog" aria-modal="true" aria-label="Wallpaper">
+  <div class="profile-page">
+    <div class="profile-topbar" id="wallTopbar" data-title="Wallpaper">
+      <button class="profile-back" type="button" data-skin-close aria-label="返回" data-back="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+    </div>
+    <div class="profile-scroll">
+      <div class="bp-group">
+        <div class="bp-cells"><div class="wp-grid" id="wallGrid"></div></div>
+      </div>
+      <div class="bp-group">
+        <div class="bc-cells">
+          <label class="bc-row wp-pick">
+            <span class="bc-k">Choose Photo</span><span class="bc-v" id="wallVal"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+            <input type="file" accept="image/*" id="wallFile" class="wp-file" aria-label="Choose Photo">
+          </label>
+          <button class="bc-row" type="button" id="wallReset" hidden>
+            <span class="bc-k">Reset to Default</span>
+          </button>
+        </div>
+        <div class="bp-foot" id="wallHint">自己选的图片只存在你这台设备的浏览器里，不会上传到任何地方。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ▲ 皮 · 选色页 结束 -->
+
+<!-- ▼ 皮 · 设置页（Bubble Color、Wallpaper、聊天方式三组）：可以整块照抄，也可以只把里面的 <section> 搬进宿主自己的设置页（外面要有一层 id="profilePanel"） -->
+<div class="profile-panel hidden" id="profilePanel" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <div class="profile-page">
+    <div class="profile-topbar">
+      <button class="profile-back" id="profileClose" type="button" aria-label="返回">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 id="profileTitle" class="hidden">设置</h2>
+    </div>
+    <div class="profile-scroll">
+      <section class="settings-card bubble-color-card" data-skin-only="ios4">
+        <div class="settings-label">Bubble Color</div>
+        <div class="bc-cells">
+          <button class="bc-row" type="button" data-side="me">
+            <span class="bc-k">My Bubbles</span><span class="bc-v" id="bubbleMeVal">iMessage</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button class="bc-row" type="button" data-side="him">
+            <span class="bc-k">His Bubbles</span><span class="bc-v" id="bubbleHimVal">Default</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-card wallpaper-card" data-skin-only="ios4">
+        <div class="settings-label">Wallpaper</div>
+        <div class="bc-cells">
+          <button class="bc-row" type="button" data-skin-open="wallPanel">
+            <span class="bc-k">Choose Wallpaper</span><span class="bc-v" id="wallName">Default</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-card" data-skin-only="ios4">
+        <div class="settings-label">聊天方式</div>
+        <div class="segmented" id="chatStyleSeg" role="group" aria-label="聊天方式">
+          <button type="button" data-val="text" class="active">发短信</button>
+          <button type="button" data-val="near">在身边</button>
+        </div>
+        <div class="push-hint" id="chatStyleHint"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ▲ 皮 · 设置页 结束 -->
+
+<script src="demo/chat.js"></script>
+<script src="skin/bubble-settings.js"></script>
+</body>
+</html>

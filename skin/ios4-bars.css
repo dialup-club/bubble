@@ -1,0 +1,638 @@
+/* Dialup Club Bubble · iPhone 皮肤 —— 导航条（.topbar）和输入条（.composer）
+   可选。要先加载 ios4.css（变量在那里）。认的结构见 AGENTS.md。 */
+
+/* ── 顶栏和输入条的地基 ──
+   皮单独拿去披在别的前端上时，顶栏里三样东西怎么摆、输入条里的输入框和按钮怎么排，靠的是这一段。
+   内容和本仓库 demo 骨头里的同名规则一样（:where() 让它的优先级也一样低），所以 demo 里两边都有也不冲突，后面的规则照样盖过它。 */
+:where(:root[data-skin^="ios4"]) :is(.topbar, .topbar *, .composer, .composer *){
+  box-sizing: border-box;            /* 宿主没有全局的 border-box 时，输入框会变高、发送键会被挤出去 */
+  -webkit-tap-highlight-color: transparent;
+}
+:where(:root[data-skin^="ios4"]){
+  --side-pad: 16px;            /* 宿主没定义这几个量时的备用值；宿主（或 demo 骨头）自己定义了就用它自己的 */
+  --ref-width: 100vw;
+  --keyboard-offset: 0px;
+}
+:where(:root[data-skin^="ios4"]) .topbar,
+:where(:root[data-skin^="ios4"]) .composer{
+  position: relative;
+  z-index: 1;
+}
+:where(:root[data-skin^="ios4"]) .topbar{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--header-h) + env(safe-area-inset-top));
+  padding: calc(env(safe-area-inset-top) + 8px) var(--side-pad) 10px;
+  border-bottom: 1px solid var(--hairline);
+  pointer-events: none;
+}
+:where(:root[data-skin^="ios4"]) .topbar > *{
+  pointer-events: auto;
+}
+:where(:root[data-skin^="ios4"]) .peerpill{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  line-height:1.15;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 76px;
+}
+:where(:root[data-skin^="ios4"]) .peerpill .name{
+  font-family: "Songti SC", "Noto Serif SC", "STSong", "SimSun", serif;
+  font-size: clamp(18px, 3vw, 28px);
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0;
+  text-shadow: 0 1px 18px rgba(255,255,255,0.3);
+}
+:where(:root[data-skin^="ios4"]) .peerpill .status{
+  font-family: var(--font-en), var(--font-cn);
+  font-size: clamp(12px, 1.8vw, 16px);
+  color: var(--text-soft);
+  margin-top: 4px;
+  letter-spacing: 0;
+}
+:where(:root[data-skin^="ios4"]) .backbtn{
+  position:absolute;
+  left: calc(var(--side-pad) + 4px);
+  top: calc(env(safe-area-inset-top) + clamp(14px, 2.5vw, 36px));
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  padding:0;
+  flex:none;
+  cursor:pointer;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  display:grid;
+  place-items:center;
+  transition: transform .15s ease;
+}
+:where(:root[data-skin^="ios4"]) .backbtn:active{
+  transform: scale(.9);
+}
+:where(:root[data-skin^="ios4"]) .backbtn svg{
+  width:22px;
+  height:22px;
+  display:block;
+  margin-left:-2px;
+}
+:where(:root[data-skin^="ios4"]) .header-actions{
+  position:absolute;
+  right: calc(var(--side-pad) - 2px);
+  top: calc(env(safe-area-inset-top) + clamp(14px, 2.5vw, 36px));
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: clamp(24px, 4vw, 42px);
+  height:36px;
+}
+:where(:root[data-skin^="ios4"]) .topbtn{
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:50%;
+  padding:0;
+  background:transparent;
+  color: var(--text);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition: transform .15s ease;
+}
+:where(:root[data-skin^="ios4"]) .topbtn:active{
+  transform: scale(.9);
+}
+:where(:root[data-skin^="ios4"]) .topbtn svg{
+  width:24px;
+  height:24px;
+  display:block;
+}
+:where(:root[data-skin^="ios4"]) .topbtn.more svg{
+  width:22px;
+  height:22px;
+}
+:where(:root[data-skin^="ios4"]) .backbtn:focus-visible,
+:where(:root[data-skin^="ios4"] .composer) textarea:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+:where(:root[data-skin^="ios4"]) .composer{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  width: min(100vw, var(--ref-width));
+  margin: 0 auto;
+  display:flex;
+  align-items:center;
+  gap: clamp(6px, 1vw, 12px);
+  background: transparent;
+  border:none;
+  padding: 0 var(--side-pad) clamp(10px, 1.6vw, 18px);
+  padding-bottom: calc(clamp(10px, 1.6vw, 18px) + env(safe-area-inset-bottom));
+  transform: translate3d(0, calc(-1 * var(--keyboard-offset)), 0);
+  -webkit-transform: translate3d(0, calc(-1 * var(--keyboard-offset)), 0);
+  transition: transform .28s cubic-bezier(.2,.8,.2,1);
+}
+:where(:root[data-skin^="ios4"]) .floatbtn{
+  flex:none;
+  width: clamp(36px, 5vw, 48px);
+  height: clamp(36px, 5vw, 48px);
+  border-radius:50%;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  padding:0;
+  transition: transform .15s ease, color .2s ease;
+}
+:where(:root[data-skin^="ios4"]) .floatbtn:active{
+  transform: scale(.9);
+  color: var(--text);
+}
+:where(:root[data-skin^="ios4"]) .floatbtn:hover{
+  color: var(--text);
+}
+:where(:root[data-skin^="ios4"]) .floatbtn svg{
+  width: clamp(20px, 2.8vw, 28px);
+  height: clamp(20px, 2.8vw, 28px);
+  display:block;
+}
+:where(:root[data-skin^="ios4"]) .floatbtn.send{
+  background: var(--send-bg);
+  color:#ffffff;
+  box-shadow: 0 16px 32px rgba(41, 60, 78, 0.22);
+}
+:where(:root[data-skin^="ios4"]) .floatbtn.send:hover{
+  color:#ffffff;
+}
+:where(:root[data-skin^="ios4"]) .floatbtn.send:active{
+  transform: scale(.97);
+}
+:where(:root[data-skin^="ios4"]) .composer .field{
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  gap: clamp(4px, 0.8vw, 10px);
+  background: var(--field-bg);
+  border: 1px solid var(--field-line);
+  border-radius: 999px;
+  padding: clamp(4px, 0.6vw, 8px) clamp(8px, 1.2vw, 14px) clamp(4px, 0.6vw, 8px) clamp(10px, 1.5vw, 16px);
+  min-height: clamp(42px, 5.5vw, 56px);
+  box-shadow: var(--shadow);
+  transition: border-color .2s ease;
+}
+:where(:root[data-skin^="ios4"]) .composer .field:focus-within{
+  border-color: var(--field-line);
+}
+:where(:root[data-skin^="ios4"]) .composer textarea:focus,
+:where(:root[data-skin^="ios4"]) .composer textarea:focus-visible{
+  outline: none;
+}
+:where(:root[data-skin^="ios4"] .composer) textarea{
+  flex:1 1 auto;
+  border:none;
+  outline:none;
+  resize:none;
+  background:transparent;
+  color: var(--text);
+  font-family: var(--font-en), var(--font-cn);
+  font-size: clamp(15px, 2vw, 18px);
+  line-height:1.35;
+  min-width:0;
+  max-height: 110px;
+  padding: 6px 0;
+  margin:0;
+}
+:where(:root[data-skin^="ios4"] .composer) textarea::placeholder{
+  color: var(--text-faint);
+  opacity: 1;
+}
+:where(:root[data-skin^="ios4"]) .emojibtn{
+  flex:none;
+  width: clamp(28px, 3.8vw, 38px);
+  height: clamp(28px, 3.8vw, 38px);
+  border:none;
+  background:transparent;
+  color: var(--accent);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  padding:0;
+  transition: transform .15s ease, color .2s ease;
+}
+:where(:root[data-skin^="ios4"]) .emojibtn:active{
+  transform: scale(.85);
+  color: var(--text);
+}
+:where(:root[data-skin^="ios4"]) .emojibtn:hover{
+  color: var(--text);
+}
+:where(:root[data-skin^="ios4"]) .emojibtn svg{
+  width: clamp(22px, 3vw, 30px);
+  height: clamp(22px, 3vw, 30px);
+  display:block;
+}
+@media (max-width: 520px){
+:where(:root[data-skin^="ios4"]) .peerpill{
+  padding: 0 44px;
+}
+:where(:root[data-skin^="ios4"]) .peerpill .name{
+  font-size: 18px;
+}
+:where(:root[data-skin^="ios4"]) .peerpill .status{
+  font-size: 12px;
+  margin-top: 3px;
+}
+:where(:root[data-skin^="ios4"]) .backbtn{
+  left: 16px;
+  top: calc(env(safe-area-inset-top) + 16px);
+  width: 32px;
+  height: 32px;
+}
+:where(:root[data-skin^="ios4"]) .backbtn svg{
+  width: 20px;
+  height: 20px;
+}
+:where(:root[data-skin^="ios4"]) .header-actions{
+  right: 16px;
+  top: calc(env(safe-area-inset-top) + 16px);
+  gap: 26px;
+  height:32px;
+}
+:where(:root[data-skin^="ios4"]) .topbtn{
+  width:32px;
+  height:32px;
+}
+:where(:root[data-skin^="ios4"]) .topbtn svg{
+  width:22px;
+  height:22px;
+}
+:where(:root[data-skin^="ios4"]) .topbtn.more svg{
+  width:20px;
+  height:20px;
+}
+:where(:root[data-skin^="ios4"]) .composer{
+  gap: 5px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+:where(:root[data-skin^="ios4"]) .floatbtn{
+  width: 36px;
+  height: 36px;
+}
+:where(:root[data-skin^="ios4"]) .floatbtn svg{
+  width: 20px;
+  height: 20px;
+}
+:where(:root[data-skin^="ios4"]) .composer .field{
+  min-height: 42px;
+  padding: 4px 8px 4px 12px;
+}
+:where(:root[data-skin^="ios4"] .composer) textarea{
+  font-size: 15px;
+}
+:where(:root[data-skin^="ios4"]) .emojibtn{
+  width: 28px;
+  height: 28px;
+}
+:where(:root[data-skin^="ios4"]) .emojibtn svg{
+  width: 22px;
+  height: 22px;
+}
+}
+:where(:root[data-skin^="ios4"] .composer) textarea,
+:where(:root[data-skin^="ios4"]) .composer,
+:where(:root[data-skin^="ios4"]) .composer *{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+
+:root[data-skin^="ios4"] .topbar{
+  flex-shrink: 0;
+  height: calc(var(--header-h) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 6px 0;
+  background: linear-gradient(to bottom, #b5c0ce 0%, #8e9db5 51.5%, #7f94b0 52.2%, #6f85a2 96.6%, #6f85a2 100%);
+  border-bottom: 0;
+  box-shadow: inset 0 1px 0.5px #e2e8ee, 0 1px 0 #2b2e37;
+}
+:root[data-skin^="ios4"] .peerpill{
+  padding: 0 64px;
+}
+:root[data-skin^="ios4"] .peerpill .name{
+  font-family: var(--font-cn);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0,0,0,.45);
+}
+:root[data-skin^="ios4"] .peerpill .status{
+  font-family: var(--font-en);
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 0;
+  color: rgba(255,255,255,.9);
+  text-shadow: 0 -1px 0 rgba(0,0,0,.4);
+}
+:root[data-skin^="ios4"] .topbtn{
+  width: 34px;
+  height: 29px;
+  border-radius: 4px;
+  border: 0.5px solid #2d3a56;
+  background: linear-gradient(to bottom, #8d9cba 0%, #7f94b5 15.1%, #5d77a0 50%, #4d6595 50.4%, #4e6899 84.5%, #4f699a 100%);
+  box-shadow: inset 0 0.5px 1.5px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.2);
+  color: #fff;
+}
+:root[data-skin^="ios4"] .header-actions{
+  right: 5px;
+  top: calc(env(safe-area-inset-top) + 8px);
+  height: 29px;
+  gap: 5px;
+}
+:root[data-skin^="ios4"] .topbtn svg,
+:root[data-skin^="ios4"] .topbtn.more svg{
+  width: 17px;
+  height: 17px;
+  filter: drop-shadow(0 -1px 0 rgba(0,0,0,.4));
+}
+:root[data-skin^="ios4"] .topbtn:active{
+  transform: none;
+  color: #fff;
+  background: linear-gradient(to bottom, #5f6f90 0%, #53698d 15%, #3a5079 50%, #2f4472 50.4%, #304675 100%);
+}
+:root[data-skin^="ios4"] .backbtn{
+  left: 5px;
+  top: calc(env(safe-area-inset-top) + 8px);
+  width: 58px;
+  height: 29px;
+  border: 0;
+  border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 58 29'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%238d9cba'/%3E%3Cstop offset='.151' stop-color='%237f94b5'/%3E%3Cstop offset='.5' stop-color='%235d77a0'/%3E%3Cstop offset='.504' stop-color='%234d6595'/%3E%3Cstop offset='.845' stop-color='%234e6899'/%3E%3Cstop offset='1' stop-color='%234f699a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M.6 14.5 11.3 1.9C12 1 13 .25 14.4.25H53.75Q57.75.25 57.75 4.25V24.75Q57.75 28.75 53.75 28.75H14.4C13 28.75 12 28 11.3 27.1Z' fill='url(%23g)' stroke='%232d3a56' stroke-width='.5'/%3E%3Cpath d='M12 2.6C12.7 1.7 13.4 1.2 14.4 1.2H53.75Q56.8 1.2 56.8 4.25' fill='none' stroke='%23000' stroke-opacity='.3' stroke-width='.8'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.2));
+  color: #fff;
+}
+:root[data-skin^="ios4"] .backbtn svg{
+  display: none;
+}
+:root[data-skin^="ios4"] .backbtn::after{
+  content: "信息";
+  margin-left: 8px;
+  font: 700 12px/1 var(--font-cn);
+  text-shadow: 0 -1px 0 rgba(0,0,0,.45);
+}
+:root[data-skin^="ios4"] .backbtn:active{
+  transform: none;
+  filter: brightness(.8) drop-shadow(0 1px 0 rgba(255,255,255,.2));
+}
+:root[data-skin^="ios4"] .composer{
+  padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, #ffffff 0, #ffffff 0.6px, #f5f5f6 1.2px, #c5c7cb 100%);
+  border-top: 0;
+  box-shadow: 0 -1px 0 rgba(0,0,0,.2);
+}
+:root[data-skin^="ios4"] .composer .field{
+  position: relative;
+  margin: 0 0 0 33px;
+  min-height: 26px;
+  padding: 0 4px 0 10px;
+  gap: 2px;
+  background: #f5f5f5;
+  border: 0.5px solid #6f6f6f;
+  border-radius: 13px;
+  box-shadow: inset 0 1px 4.5px rgba(0,0,0,.6);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root[data-skin^="ios4"] .composer .field:focus-within{
+  border-color: #6f6f6f;
+}
+:root[data-skin^="ios4"] .composer textarea{
+  font-family: var(--font-cn);
+  font-size: 16px;
+  color: #000;
+  caret-color: #3f6fe8;
+}
+:root[data-skin^="ios4"] .composer textarea::placeholder{
+  color: #b3b3b3;
+}
+:root[data-skin^="ios4"] .composer .emojibtn{
+  color: #9a9da2;
+}
+:root[data-skin^="ios4"] .floatbtn.clip-in-field{
+  position: absolute;
+  left: -33px;
+  bottom: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 0.5px solid #31363e;
+  background: linear-gradient(to bottom, #afb5bc 0%, #767f8b 52%, #5e6977 52%, #5e6977 100%);
+  box-shadow: inset 0 1px 0 #383e47, 0 1px 1px #fefffe;
+  color: #fff;
+}
+:root[data-skin^="ios4"] .floatbtn.clip-in-field svg{
+  width: 15px;
+  height: 15px;
+  filter: drop-shadow(0 -0.5px 1px rgba(0,0,0,.4));
+}
+:root[data-skin^="ios4"] .floatbtn.clip-in-field:active{
+  transform: none;
+  filter: brightness(.85);
+}
+:root[data-skin^="ios4"] .floatbtn{
+  color: #7b8592;
+}
+:root[data-skin^="ios4"] .composer .floatbtn.send{
+  flex: none;
+  align-self: flex-end;
+  margin-bottom: 1px;
+  width: 55.5px;
+  height: 26px;
+  padding: 0;
+  border-radius: 12px;
+  border: 0.5px solid var(--ios-send-line);
+  background: var(--ios-send-bg);
+  box-shadow: inset 0 0.5px 1px rgba(0,0,0,.25), 0 0.5px 1px #fefffe;
+  color: #fff;
+}
+:root[data-skin^="ios4"] .composer .floatbtn.send svg{
+  display: none;
+}
+:root[data-skin^="ios4"] .composer .floatbtn.send::after{
+  content: "发送";
+  font: 700 15px/1 var(--font-cn);
+  text-shadow: 0 -1px 0 rgba(0,0,0,.35);
+}
+:root[data-skin^="ios4"] .composer .floatbtn.send:active{
+  transform: none;
+  filter: brightness(.82);
+}
+:root[data-skin^="ios4"] .peerpill .status:not(.typing){
+  display: none;
+}
+:root[data-skin^="ios4"] .topbar{
+  --header-h: 44px;
+}
+:root[data-skin^="ios4"] .backbtn,
+:root[data-skin^="ios4"] .header-actions{
+  top: calc(env(safe-area-inset-top) + 7px);
+}
+:root[data-skin^="ios4"] .backbtn{
+  height: 30px;
+}
+:root[data-skin^="ios4"] .header-actions{
+  height: 30px;
+}
+:root[data-skin^="ios4"] .topbtn.more{
+  width: auto;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 5px;
+}
+:root[data-skin^="ios4"] .topbtn.more svg{
+  display: none;
+}
+:root[data-skin^="ios4"] .topbtn.more::after{
+  content: "设置";
+  font: 700 12px/1 var(--font-cn);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0,0,0,.45);
+}
+:root[data-skin^="ios4"] .peerpill .name{
+  font-size: 19px;
+}
+:root[data-skin^="ios4"] .composer .field{
+  min-width: 0;
+  flex: 1 1 0;
+  min-height: 28px;
+  padding: 0 3px 0 10px;
+}
+:root[data-skin^="ios4"] .composer textarea{
+  min-width: 0;
+  width: 100%;
+  padding: 3px 0;
+  line-height: 20px;
+  min-height: 26px;
+}
+:root[data-skin^="ios4"] .composer .emojibtn{
+  width: 22px;
+  height: 22px;
+}
+:root[data-skin^="ios4"] .composer .emojibtn svg{
+  width: 18px;
+  height: 18px;
+}
+:root[data-skin^="ios4"] .floatbtn.clip-in-field{
+  bottom: 1px;
+}
+:root[data-skin^="ios4"] .topbar{
+  height: calc(44px + var(--ios-sa));
+  padding-top: var(--ios-sa);
+  background:
+    linear-gradient(to bottom, #b5c0ce 0%, #8e9db5 51.5%, #7f94b0 52.2%, #6f85a2 100%) left bottom / 100% 44px no-repeat,
+    linear-gradient(to bottom, #e6e8eb, #c9cdd2) left top / 100% var(--ios-sa) no-repeat;
+}
+:root[data-skin^="ios4"] .backbtn,
+:root[data-skin^="ios4"] .header-actions{
+  top: calc(var(--ios-sa) + 7px);
+}
+:root[data-skin^="ios4"] .topbar{
+  background:
+    linear-gradient(to bottom, #b5c0ce 0%, #8e9db5 51.5%, #7f94b0 52.2%, #6f85a2 100%) left bottom / 100% 44px no-repeat,
+    linear-gradient(to bottom, #bec8d5, #b5c0ce) left top / 100% var(--ios-sa) no-repeat;
+}
+:root[data-skin^="ios4"] .composer{
+  gap: 7px;
+}
+:root[data-skin^="ios4"] .topbar{
+  --header-h: calc(44 * var(--nu));
+  height: calc(44 * var(--nu) + var(--ios-sa));
+  padding-left: calc(6 * var(--nu));
+  padding-right: calc(6 * var(--nu));
+  background:
+    linear-gradient(to bottom, #b5c0ce 0%, #8e9db5 51.5%, #7f94b0 52.2%, #6f85a2 100%) left bottom / 100% calc(44 * var(--nu)) no-repeat,
+    linear-gradient(to bottom, #bec8d5, #b5c0ce) left top / 100% var(--ios-sa) no-repeat;
+}
+:root[data-skin^="ios4"] .backbtn{
+  left: calc(5 * var(--nu));
+  top: calc(var(--ios-sa) + 7 * var(--nu));
+  width: calc(58 * var(--nu));
+  height: calc(30 * var(--nu));
+}
+:root[data-skin^="ios4"] .backbtn::after{
+  margin-left: calc(8 * var(--nu));
+  font-size: calc(12 * var(--nu));
+}
+:root[data-skin^="ios4"] .header-actions{
+  right: calc(5 * var(--nu));
+  top: calc(var(--ios-sa) + 7 * var(--nu));
+  height: calc(30 * var(--nu));
+  gap: calc(5 * var(--nu));
+}
+:root[data-skin^="ios4"] .topbtn.more{
+  height: calc(30 * var(--nu));
+  padding: 0 calc(10 * var(--nu));
+  border-radius: calc(5 * var(--nu));
+}
+:root[data-skin^="ios4"] .topbtn.more::after{
+  font-size: calc(12 * var(--nu));
+}
+:root[data-skin^="ios4"] .peerpill{
+  padding: 0 calc(64 * var(--nu));
+}
+:root[data-skin^="ios4"] .peerpill .name{
+  font-size: calc(19 * var(--nu));
+}
+:root[data-skin^="ios4"] .composer{
+  padding: calc(7 * var(--nu)) calc(6 * var(--nu)) calc(7 * var(--nu) + var(--ios-sb) + min(var(--ios-sb), 8 * var(--nu)));
+  gap: calc(7 * var(--nu));
+}
+:root[data-skin^="ios4"] .composer .field{
+  margin-left: calc(33 * var(--nu));
+  min-height: calc(28 * var(--nu));
+  padding: 0 calc(3 * var(--nu)) 0 calc(10 * var(--nu));
+  border-radius: calc(14 * var(--nu));
+}
+:root[data-skin^="ios4"] .composer textarea{
+  min-height: calc(26 * var(--nu));
+  padding: calc(13 * var(--nu) - 10px) 0;
+}
+:root[data-skin^="ios4"] .composer .emojibtn{
+  width: calc(22 * var(--nu));
+  height: calc(22 * var(--nu));
+}
+:root[data-skin^="ios4"] .composer .emojibtn svg{
+  width: calc(18 * var(--nu));
+  height: calc(18 * var(--nu));
+}
+:root[data-skin^="ios4"] .floatbtn.clip-in-field{
+  left: calc(-33 * var(--nu));
+  bottom: calc(1 * var(--nu));
+  width: calc(26 * var(--nu));
+  height: calc(26 * var(--nu));
+}
+:root[data-skin^="ios4"] .floatbtn.clip-in-field svg{
+  width: calc(15 * var(--nu));
+  height: calc(15 * var(--nu));
+}
+:root[data-skin^="ios4"] .composer .floatbtn.send{
+  width: calc(55.5 * var(--nu));
+  height: calc(26 * var(--nu));
+  margin-bottom: calc(1 * var(--nu));
+  border-radius: calc(12 * var(--nu));
+}
+:root[data-skin^="ios4"] .composer .floatbtn.send::after{
+  font-size: calc(15 * var(--nu));
+}

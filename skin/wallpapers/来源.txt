@@ -1,0 +1,12 @@
+自带壁纸的来源
+══════════════
+这六张图不是本项目画的，是从网上的素材站下载的。公开发布这个仓库之前，请把每一张的下载网站和授权方式补在下面；
+哪一张的授权不允许转发，就把它从 wallpapers/ 和 wallpapers/thumbs/ 里删掉，并删掉 bubble-colors.js 里 BUBBLE_WALLPAPERS 对应的那一行。
+
+文件              名字            来源网站 / 作者 / 授权
+halftone.jpg      Halftone        待补
+sparkle-sky.jpg   Sparkle Sky     待补
+blossom.jpg       Blossom         待补
+stardust.jpg      Stardust        待补
+seafoam.jpg       Seafoam         待补
+music-box.jpg     Music Box       待补

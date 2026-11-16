@@ -1,0 +1,395 @@
+/* Dialup Club Bubble · iPhone 皮肤（iOS 4 / 5 年代的「信息」）—— 核心：气泡
+   ─────────────────────────────────────────────────────────────
+   只想要气泡，拿这一个文件 + bubble-colors.js 就够。导航条和输入条在 ios4-bars.css，设置页和选色页在 ios4-settings.css。
+   开关：<html data-skin="ios4">（iMessage 蓝）或 data-skin="ios4-sms"（Classic 绿）。选择器全部以 :root[data-skin^="ios4"] 开头，
+   没挂这个属性时一行都不生效，所以可以放心和宿主原来的样式并存。
+   气泡 = 一整张 SVG（圆角 + 尾巴一条轮廓，带渐变、顶部胶囊高光、白色内描边、细描边、投影），用 border-image 九宫格拉伸；
+   --bub-me / --bub-him 由 bubble-colors.js 按「气泡颜色」设置挂上，没设就用皮肤原来那张（--ios-img-out / --ios-img-in）。
+   这里认的结构（详见仓库根目录 AGENTS.md）：.row.human / .row.ai 是一行消息，里面一个 .bubble；.tail = 一组的最后一条（带尾巴）；
+   .day.stamp = 时间条；.row.ai.act-note > .bubble.note = 括号动作小字；.wall = 聊天页最底下的背景层。 */
+
+/* ── 排版的地基 ──
+   皮单独拿去披在别的前端上时，一行消息靠左靠右、气泡不撑满整行、时间条居中，靠的是这几条。
+   值和本仓库 demo 骨头里的一样，所以两边都有也不冲突。放在最前面，后面的规则可以盖过它。 */
+:where(:root[data-skin^="ios4"]) :is(.row, .row *, .day){
+  box-sizing: border-box;
+}
+:root[data-skin^="ios4"] .row{
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+  box-sizing: border-box;
+  list-style: none;
+}
+:root[data-skin^="ios4"] .row.human{
+  justify-content: flex-end;
+}
+:root[data-skin^="ios4"] .row.ai{
+  justify-content: flex-start;
+}
+:root[data-skin^="ios4"] .row .bubble{
+  position: relative;
+  box-sizing: border-box;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+:root[data-skin^="ios4"] .day{
+  display: block;
+  align-self: center;
+  box-sizing: border-box;
+  list-style: none;
+  text-align: center;
+}
+:root[data-skin^="ios4"] .aihead{
+  display: none;
+}
+
+:root[data-skin^="ios4"]{
+  --font-en: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-cn: "Helvetica Neue", Helvetica, "STHeiti", "Heiti SC", "PingFang SC", sans-serif;
+  --bg: #dbe2ed;
+  --text: #1c222b;
+  --text-soft: #4a5260;
+  --text-faint: #8a919c;
+  --accent: #2253e1;
+  --tick: #5b86d6;
+  --hairline: rgba(0,0,0,.18);
+  --header-h: 45px;
+  --composer-h: 40px;
+  --bubble-radius: 12.5px;
+  --edge-fade-top: 0px;
+  --edge-fade-tail: 0px;
+  --ios-in-bg: linear-gradient(to bottom, #f4f4f4 0%, #e2e2e2 26%, #dddddd 46%, #dddddd 83%, #e7e7e7 95%, #f4f4f4 100%);
+  --ios-in-line: #6c6d6f;
+  --ios-in-hl: #fefffe;
+  --ios-in-gloss: 1;
+  --ios-in-tail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23dddddd'/%3E%3Cstop offset='.7' stop-color='%23e4e4e4'/%3E%3Cstop offset='1' stop-color='%23f4f4f4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M5.5 0H6.75C6.75 9 8.6 15 16 19.6C11 19.9 5 18.75 0 18.75V17.6C3 17.6 5.5 16 5.5 13Z' fill='url(%23t)'/%3E%3Cpath d='M6.75 0C6.75 9 8.6 15 16 19.6C11 19.9 5 18.75 0 18.75' fill='none' stroke='%236c6d6f' stroke-width='.5'/%3E%3C/svg%3E");
+  --ios-out-bg: linear-gradient(to bottom, #6aa6f5 0%, #8fc0fd 26%, #96c6fe 48%, #a8d5fe 87%, #c0e9fe 98%, #d4f3ff 100%);
+  --ios-out-line: #2e5a96;
+  --ios-out-hl: #b5dbff;
+  --ios-out-gloss: .8;
+  --ios-out-tail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2396c6fe'/%3E%3Cstop offset='.7' stop-color='%23a8d5fe'/%3E%3Cstop offset='1' stop-color='%23d4f3ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M5.5 0H6.75C6.75 9 8.6 15 16 19.6C11 19.9 5 18.75 0 18.75V17.6C3 17.6 5.5 16 5.5 13Z' fill='url(%23t)'/%3E%3Cpath d='M6.75 0C6.75 9 8.6 15 16 19.6C11 19.9 5 18.75 0 18.75' fill='none' stroke='%232e5a96' stroke-width='.5'/%3E%3C/svg%3E");
+  --ios-send-bg: linear-gradient(to bottom, #4f7fd8 0%, #8db4f7 4.9%, #4a80ec 51%, #3369e6 51%, #1a4fdc 100%);
+  --ios-send-line: #1d3f94;
+}
+:root[data-skin="ios4-sms"]{
+  --ios-out-bg: linear-gradient(to bottom, #3ead36 0%, #6dbe39 26%, #7cc63b 48.5%, #a6dd42 87%, #beee5c 98.5%, #d3ff89 100%);
+  --ios-out-line: #004a0d;
+  --ios-out-hl: #48b049;
+  --ios-out-gloss: .75;
+  --ios-out-tail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%237cc63b'/%3E%3Cstop offset='.7' stop-color='%23a6dd42'/%3E%3Cstop offset='1' stop-color='%23d3ff89'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M5.5 0H6.75C6.75 9 8.6 15 16 19.6C11 19.9 5 18.75 0 18.75V17.6C3 17.6 5.5 16 5.5 13Z' fill='url(%23t)'/%3E%3Cpath d='M6.75 0C6.75 9 8.6 15 16 19.6C11 19.9 5 18.75 0 18.75' fill='none' stroke='%23004a0d' stroke-width='.5'/%3E%3C/svg%3E");
+  --ios-send-bg: linear-gradient(to bottom, #6eaa37 0%, #a6ce66 4.9%, #6cad34 51%, #5ba41f 51%, #479d18 100%);
+  --ios-send-line: #317217;
+}
+:root[data-skin^="ios4"] .wall{
+  background-image: none !important;
+  background-color: #dbe2ed;
+}
+:root[data-skin^="ios4"] .wall::after{
+  display: none;
+}
+:root[data-skin^="ios4"] .scroll{
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+:root[data-skin^="ios4"] .day{
+  font-family: var(--font-en);
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a919c;
+  text-shadow: 0 1px 0 rgba(255,255,255,.9);
+}
+:root[data-skin^="ios4"] .row .bubble{
+  font-family: var(--font-cn);
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: normal;
+  padding: 5px 13px 6px 13.5px;
+  border-radius: var(--bubble-radius);
+  color: #000;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root[data-skin^="ios4"] .row.ai .bubble{
+  width: auto;
+  max-width: min(78%, 36rem);
+  background: var(--ios-in-bg);
+  border: 0.5px solid var(--ios-in-line);
+  box-shadow: 0 0.5px 2px rgba(0,0,0,.3), inset 0 1.5px 1px var(--ios-in-hl);
+}
+:root[data-skin^="ios4"] .row.human .bubble{
+  max-width: min(78%, 36rem);
+  background: var(--ios-out-bg);
+  border: 0.5px solid var(--ios-out-line);
+  box-shadow: 0 0.5px 2px rgba(0,0,0,.3), inset 0 1.5px 1px var(--ios-out-hl);
+}
+:root[data-skin^="ios4"] .row .bubble::before{
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 6px;
+  right: 7px;
+  height: 11px;
+  border-radius: 11px;
+  background: linear-gradient(to bottom, #fff, rgba(255,255,255,.4));
+  pointer-events: none;
+}
+:root[data-skin^="ios4"] .row.ai .bubble::before{
+  opacity: var(--ios-in-gloss);
+}
+:root[data-skin^="ios4"] .row.human .bubble::before{
+  opacity: var(--ios-out-gloss);
+}
+:root[data-skin^="ios4"] .row .bubble > *{
+  position: relative;
+}
+:root[data-skin^="ios4"] .row.human.tail .bubble{
+  border-bottom-right-radius: 0;
+}
+:root[data-skin^="ios4"] .row.ai.tail .bubble{
+  border-bottom-left-radius: 0;
+}
+:root[data-skin^="ios4"] .row.human.tail .bubble::after,
+:root[data-skin^="ios4"] .row.ai.tail .bubble::after{
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  width: 16px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-size: 16px 20px;
+  pointer-events: none;
+}
+:root[data-skin^="ios4"] .row.human.tail .bubble::after{
+  right: -9px;
+  background-image: var(--ios-out-tail);
+}
+:root[data-skin^="ios4"] .row.ai.tail .bubble::after{
+  left: -9px;
+  transform: scaleX(-1);
+  background-image: var(--ios-in-tail);
+}
+:root[data-skin^="ios4"] .row.human .meta,
+:root[data-skin^="ios4"] .row.ai .meta{
+  font-family: var(--font-en);
+  font-size: 11px;
+  color: rgba(0,0,0,.4);
+}
+:root[data-skin^="ios4"] .bubble .txt code{
+  background: rgba(0,0,0,.08);
+}
+:root[data-skin^="ios4"] .meta .tick{
+  display: none;
+}
+:root[data-skin^="ios4"] .scroll{
+  padding-left: 6px;
+  padding-right: 6px;
+}
+:root[data-skin^="ios4"] .row.ai,
+:root[data-skin^="ios4"] .aihead{
+  padding-left: 12px;
+  padding-right: 12px;
+}
+:root[data-skin^="ios4"] .row.human{
+  padding-left: 12px;
+  padding-right: 12px;
+}
+:root[data-skin^="ios4"] .aihead{
+  display: none;
+}
+:root[data-skin^="ios4"] .row .bubble .meta{
+  position: absolute;
+  top: 100%;
+  margin: 3px 0 0;
+  font: 700 11px/1 var(--font-en);
+  color: #8a919c;
+  text-shadow: 0 1px 0 rgba(255,255,255,.9);
+  white-space: nowrap;
+}
+:root[data-skin^="ios4"] .row.ai .bubble .meta{
+  left: 4px;
+}
+:root[data-skin^="ios4"] .row.human .bubble .meta{
+  right: 4px;
+}
+:root[data-skin^="ios4"] .row .bubble .meta > span:not(.model-tag):not(.fail){
+  display: none;
+}
+:root[data-skin^="ios4"] .row{
+  margin-top: 10px;
+}
+:root[data-skin^="ios4"] .row.grouped{
+  margin-top: 6px;
+}
+:root[data-skin^="ios4"] .scroll{
+  padding-left: 4px;
+  padding-right: 4px;
+}
+:root[data-skin^="ios4"] .row.ai,
+:root[data-skin^="ios4"] .row.human{
+  padding-left: 8px;
+  padding-right: 8px;
+}
+:root[data-skin^="ios4"] .row .bubble{
+  line-height: 20px;
+  padding: 3px 13px 4px 13.5px;
+}
+:root[data-skin^="ios4"] .row.ai .bubble,
+:root[data-skin^="ios4"] .row.human .bubble{
+  max-width: min(64%, 30rem);
+}
+:root[data-skin^="ios4"] .row,
+:root[data-skin^="ios4"] .row.grouped{
+  margin-top: 9px;
+}
+:root[data-skin^="ios4"] .day + .row{
+  margin-top: 6px;
+}
+:root[data-skin^="ios4"] .day{
+  margin-top: 10px;
+}
+:root[data-skin^="ios4"] .row.human{
+  padding-right: 12px;
+}
+:root[data-skin^="ios4"] .row.ai{
+  padding-left: 8px;
+}
+:root[data-skin^="ios4"] .row.human.tail .bubble::after{
+  right: -12px;
+  bottom: -1.2px;
+  width: 21px;
+  height: 24px;
+  background-size: 21px 24px;
+}
+:root[data-skin^="ios4"] .row.ai.tail .bubble::after{
+  left: -9px;
+  bottom: -1px;
+  width: 16px;
+  height: 20px;
+  background-size: 16px 20px;
+}
+:root[data-skin^="ios4"] .row.ai .bubble,
+:root[data-skin^="ios4"] .row.human .bubble{
+  max-width: min(70%, 30rem);
+}
+:root[data-skin^="ios4"] .row,
+:root[data-skin^="ios4"] .row.grouped{
+  margin-top: 10px;
+}
+:root[data-skin^="ios4"]{
+  --ios-img-in: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='31' viewBox='0 0 44 31'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='0' y2='30' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23f4f4f4'/%3E%3Cstop offset='0.26' stop-color='%23e2e2e2'/%3E%3Cstop offset='0.46' stop-color='%23dddddd'/%3E%3Cstop offset='0.83' stop-color='%23dddddd'/%3E%3Cstop offset='0.95' stop-color='%23e7e7e7'/%3E%3Cstop offset='1' stop-color='%23f4f4f4'/%3E%3C/linearGradient%3E%3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='.4'/%3E%3C/linearGradient%3E%3CclipPath id='c'%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg transform='translate%2844%2C0%29 scale%28-1%2C1%29'%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='%23000' fill-opacity='.22' transform='translate%280%2C.8%29'/%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='url%28%23f%29'/%3E%3Cg clip-path='url%28%23c%29'%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='none' stroke='%23fff' stroke-opacity='.9' stroke-width='1.2' transform='translate%280%2C1.3%29'/%3E%3C/g%3E%3Crect x='6' y='1.2' width='23' height='11' rx='5.5' fill='url%28%23s%29' opacity='1'/%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='none' stroke='%236c6d6f' stroke-width='.7'/%3E%3C/g%3E%3C/svg%3E");
+  --ios-img-out: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='31' viewBox='0 0 44 31'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='0' y2='30' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%236aa6f5'/%3E%3Cstop offset='0.26' stop-color='%238fc0fd'/%3E%3Cstop offset='0.48' stop-color='%2396c6fe'/%3E%3Cstop offset='0.87' stop-color='%23a8d5fe'/%3E%3Cstop offset='0.98' stop-color='%23c0e9fe'/%3E%3Cstop offset='1' stop-color='%23d4f3ff'/%3E%3C/linearGradient%3E%3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='.4'/%3E%3C/linearGradient%3E%3CclipPath id='c'%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='%23000' fill-opacity='.22' transform='translate%280%2C.8%29'/%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='url%28%23f%29'/%3E%3Cg clip-path='url%28%23c%29'%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='none' stroke='%23fff' stroke-opacity='.9' stroke-width='1.2' transform='translate%280%2C1.3%29'/%3E%3C/g%3E%3Crect x='6' y='1.2' width='23' height='11' rx='5.5' fill='url%28%23s%29' opacity='0.8'/%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='none' stroke='%232e5a96' stroke-width='.7'/%3E%3C/g%3E%3C/svg%3E");
+}
+:root[data-skin="ios4-sms"]{
+  --ios-img-out: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='31' viewBox='0 0 44 31'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='0' y2='30' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%233ead36'/%3E%3Cstop offset='0.26' stop-color='%236dbe39'/%3E%3Cstop offset='0.485' stop-color='%237cc63b'/%3E%3Cstop offset='0.87' stop-color='%23a6dd42'/%3E%3Cstop offset='0.985' stop-color='%23beee5c'/%3E%3Cstop offset='1' stop-color='%23d3ff89'/%3E%3C/linearGradient%3E%3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='.4'/%3E%3C/linearGradient%3E%3CclipPath id='c'%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='%23000' fill-opacity='.22' transform='translate%280%2C.8%29'/%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='url%28%23f%29'/%3E%3Cg clip-path='url%28%23c%29'%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='none' stroke='%23fff' stroke-opacity='.9' stroke-width='1.2' transform='translate%280%2C1.3%29'/%3E%3C/g%3E%3Crect x='6' y='1.2' width='23' height='11' rx='5.5' fill='url%28%23s%29' opacity='0.75'/%3E%3Cpath d='M14.5%2C0.5 H22 A14%2C14 0 0 1 36%2C14.5 V16.5 C36%2C23.2 38.9%2C27.6 43.6%2C29.4 C39.2%2C30.1 34.8%2C29.4 31.5%2C27.4 C29%2C28.9 25.8%2C29.5 22%2C29.5 H14.5 A14%2C14 0 0 1 0.5%2C15.5 V14.5 A14%2C14 0 0 1 14.5%2C0.5 Z' fill='none' stroke='%23004a0d' stroke-width='.7'/%3E%3C/g%3E%3C/svg%3E");
+}
+:root[data-skin^="ios4"] .row .bubble,
+:root[data-skin^="ios4"] .row.ai .bubble,
+:root[data-skin^="ios4"] .row.human .bubble,
+:root[data-skin^="ios4"] .row.human.tail .bubble,
+:root[data-skin^="ios4"] .row.ai.tail .bubble{
+  box-sizing: border-box;
+  min-height: 29px;
+  padding: 4px 13px 5px 14px;
+  background: none;
+  border-style: solid;
+  border-width: 0;
+  border-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+:root[data-skin^="ios4"] .row.human .bubble{
+  padding: 4px 14px 5px 13px;
+  border-image: var(--bub-me, var(--ios-img-out)) 14 22 16 15 fill / 14px 22px 16px 15px / 0 8px 1px 0 stretch;
+}
+:root[data-skin^="ios4"] .row.ai .bubble{
+  border-image: var(--bub-him, var(--ios-img-in)) 14 15 16 22 fill / 14px 15px 16px 22px / 0 0 1px 8px stretch;
+}
+:root[data-skin^="ios4"] .row .bubble::before,
+:root[data-skin^="ios4"] .row .bubble::after{
+  display: none !important;
+}
+:root[data-skin^="ios4"] .row.human{
+  padding-left: 8px;
+  padding-right: 10px;
+}
+:root[data-skin^="ios4"] .row.ai{
+  padding-left: 7px;
+  padding-right: 8px;
+}
+:root[data-skin^="ios4"]{
+  --ios-sa: env(safe-area-inset-top, 0px);
+}
+:root[data-skin^="ios4"] .row.ai::before{
+  display: none;
+}
+:root[data-skin^="ios4"] .row.ai.act-note .bubble.note{
+  min-height: 0;
+  max-width: min(80%, 30rem);
+  padding: 0 0 0 14px;
+  border-image: none;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-cn);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 17px;
+  color: #8a919c;
+  text-shadow: 0 1px 0 rgba(255,255,255,.9);
+  overflow-wrap: anywhere;
+}
+:root[data-skin^="ios4"] .row.act-note{
+  margin-top: 6px;
+}
+:root[data-skin^="ios4"] .row.act-note + .row{
+  margin-top: 7px;
+}
+:root[data-skin^="ios4"] .row.act-note .bubble .meta{
+  left: 14px;
+}
+:root[data-skin^="ios4"] .day.stamp{
+  align-self: center;
+  box-sizing: content-box;
+  height: 14px;
+  margin: 5px 0 0;
+  padding: 0;
+  font: 700 12px/14px var(--font-cn);
+  letter-spacing: 0;
+  color: #8890a2;
+  text-shadow: 0 1px 0 rgba(255,255,255,.45);
+  white-space: nowrap;
+}
+:root[data-skin^="ios4"] .day.stamp + .row,
+:root[data-skin^="ios4"] .day.stamp + .aihead + .row{
+  margin-top: 6.5px;
+}
+:root[data-skin^="ios4"] .scroll{
+  touch-action: pan-y pinch-zoom;
+}
+:root[data-skin^="ios4"]{
+  --nu: clamp(1px, calc(100vw / 320), 1.4px);
+  --ios-sb: env(safe-area-inset-bottom, 0px);
+}
+/* ── 气泡颜色 · 新色卡 / 自选色 / 透明度 ── */
+/* 自选了很深的颜色时，气泡上的字换成白的（skin/bubble-colors.js 在 <html> 上挂 data-bub-me-ink / data-bub-him-ink） */
+:root[data-skin^="ios4"][data-bub-me-ink="light"] .row.human .bubble,
+:root[data-skin^="ios4"][data-bub-him-ink="light"] .row.ai .bubble:not(.note){
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0,0,0,.3);
+}
+/* ── 壁纸：有自选壁纸时，聊天页最底下那一层换成它（skin/bubble-colors.js 挂 --chat-wall 和 data-wall="on"） ── */
+:root[data-skin^="ios4"][data-wall="on"] .wall{
+  background-image: var(--chat-wall) !important;
+  min-height: 100vh;                 /* 个别环境里 --screen-height 比窗口矮，壁纸要铺满整个窗口 */
+  min-height: 100dvh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* 有壁纸时，时间条和动作小字加一圈白晕，花的背景上也认得清 */
+:root[data-skin^="ios4"][data-wall="on"] .day,
+:root[data-skin^="ios4"][data-wall="on"] .row.ai.act-note .bubble.note{
+  color: #4f5968;
+  text-shadow: 0 0 2px #fff, 0 0 5px rgba(255,255,255,.95), 0 1px 0 #fff;
+}
