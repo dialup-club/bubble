@@ -4,7 +4,7 @@
 
 ## 这是什么，不是什么
 
-- **是**：一层外观。老 iPhone（iOS 4 / 5 年代）「信息」的聊天气泡，加上气泡换色、透明度、换壁纸、聊天方式开关这几样设置。纯 CSS + 原生 JS，没有依赖；除了 `skin/wallpapers/` 里几张自带壁纸，没有别的图片文件。
+- **是**：一层外观。老 iPhone（iOS 4 / 5 年代）「信息」的聊天气泡，加上给对方起昵称和换头像、气泡换色、透明度、换壁纸、聊天方式开关这几样设置。纯 CSS + 原生 JS，没有依赖；除了 `skin/wallpapers/` 里几张自带壁纸，没有别的图片文件。
 - **不是**：聊天应用。这里没有模型、没有后端、没有聊天记录、没有账号。宿主（主人的前端）原来怎么收发消息，装完以后还是怎么收发。
 - 除了宿主本来就有的请求，这套皮肤**不发任何网络请求**；所有设置只存在浏览器的 localStorage 里。
 
@@ -87,7 +87,7 @@
 
 1. **把宿主自己的顶栏和输入框藏起来**（只在装了皮肤时藏）：`html[data-skin] .宿主的顶栏, html[data-skin] .宿主的输入框 { display:none; }`
 2. **接上宿主自己的发送**：输入框是 `#input`（一个 `<textarea>`），发送键是 `#sendBtn`。点发送键时取 `#input` 的值，交给宿主原来的发送函数，然后清空。皮肤不管消息发到哪去。
-3. **接上名字和两个角上的键**：对方的名字写进 `#peerName`；左上 `#backBtn` 接宿主的「返回 / 菜单」；右上 `#moreBtn` 加上 `data-skin-open="profilePanel"` 就能滑出皮肤的设置页（下一步）。
+3. **接上名字和两个角上的键**：对方的名字写进 `#peerName`（用户可以在设置页的 Contact › Nickname 里自己改，见步骤 6 里的「对方的昵称和头像」）；左上 `#backBtn` 接宿主的「返回 / 菜单」；右上 `#moreBtn` 加上 `data-skin-open="profilePanel"` 就能滑出皮肤的设置页（下一步）。
 4. **给输入条留位置**：输入条是固定在屏幕底部的，消息列表底部要留出它的高度，否则最后一条会被挡住：`html[data-skin] .宿主的消息列表 { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }`
 
 5. **手机键盘弹起来的时候**：输入条固定在屏幕底部，手机上点输入框、键盘弹出来以后，它要跟着升到键盘上面，不然会被键盘盖住。这件事皮肤**不管**，因为每个前端处理键盘的办法不一样。宿主原来的输入框如果在手机上本来就不会被键盘挡，照它原来的办法处理新的输入条即可；需要参考的话，`demo/chat.js` 里搜 `keyboard-offset`，那一段用 `visualViewport` 量出键盘高度、写进 CSS 变量 `--keyboard-offset`，`ios4-bars.css` 里的输入条会读这个变量往上让。装完一定要在真手机上点一下输入框确认。
@@ -103,6 +103,16 @@
 ```
 
 面板里的返回键加 `data-skin-close` 就能关。只想把其中某一组（比如 Bubble Color）嵌进宿主已有的设置页也可以：把那个 `<section class="settings-card">…</section>` 搬过去，外面包一层 `id="profilePanel"` 的元素（样式是按这个 id 写的），选色页那一整块仍然照抄。
+
+**对方的昵称和头像（Contact）。** 设置页最上面那一组，样子照老 iPhone 通讯录的编辑页：左边一格头像，右边 Nickname、Choose Photo 两行（选了头像以后多一行 Delete Photo）。
+
+- **昵称**：就是用户给对方起的备注。在 Nickname 那一行直接打字，顶栏中间的名字（`#peerName`）马上跟着变，刷新后还在；留空就回到宿主原来写的名字。宿主不用为它写代码：用户起了昵称以后，宿主再往 `#peerName` 里写别的，皮肤也会换回用户起的那个。演示页里默认写的是一颗 ♡，宿主换成自己的。
+- **头像**：点左边那一格或 Choose Photo，从自己设备里挑一张图。图在浏览器里裁成正方形、缩到 256 像素后存在本机，不上传。老 iPhone 的「信息」聊天页里本来没有头像，所以皮肤**只把它显示在设置页这一格里**，不会自己往聊天页里加头像。宿主的页面上本来就有头像的话，接法二选一：给那个元素加上 `data-skin-avatar`（皮肤会把图铺成它的背景）；或者自己写 CSS，`:root[data-avatar="on"] .宿主的头像 { background-image: var(--peer-avatar); background-size: cover; }`。
+
+有两种情况要留意：
+
+- 宿主没有用皮肤的顶栏：给宿主自己显示对方名字的那个元素加上 `id="peerName"` 就行；宿主既没有显示名字的地方、也用不上头像，就把 Contact 这一组删掉，免得摆一组改了没反应的东西。
+- 宿主想让模型也知道昵称（比如在系统提示里写「她给你的备注是 …」）：发消息时读 `DialupBubble.peerName()`。皮肤自己不会把昵称和头像告诉任何人。
 
 **路二：宿主用自己的设置界面。** 不加载 `ios4-settings.css`，只加载 `bubble-settings.js`（或者连它也不要，直接读写 localStorage 再调 `applyBubbleColors()`）。接口见下面。
 
@@ -136,10 +146,12 @@
 | `imageFor(choice, side)` | 返回那颗气泡的 CSS `url(...)`，给宿主自己画小色块用 |
 | `setWallpaperFromFile(file)` / `resetWallpaper()` | 壁纸 |
 | `chatStyle()` / `textingOn()` | 聊天方式的当前值 |
+| `peerName()` / `setPeerName(name)` | 对方的昵称（顶栏上的名字）：现在显示的那个 / 改掉（最多 24 个字；传 `""` = 回到宿主原来的） |
+| `avatar()` / `setAvatarFromFile(file)` / `resetAvatar()` | 对方的头像：返回 data URL（没选 = `""`）/ 从一个图片文件设 / 删掉 |
 | `openPanel(id)` / `closePanel(id)` / `openPicker(side)` | 开关面板 |
 | `refresh()` | 宿主自己改了 localStorage 之后调一次 |
 
-localStorage 键（都只在本机）：`companion_skin`、`companion_bubble_me`、`companion_bubble_him`、`companion_bubble_me_opacity`、`companion_bubble_him_opacity`、`companion_wallpaper`、`companion_ios_style`。宿主已经用了同名的键就在两个 JS 文件顶部改掉。
+localStorage 键（都只在本机）：`companion_skin`、`companion_bubble_me`、`companion_bubble_him`、`companion_bubble_me_opacity`、`companion_bubble_him_opacity`、`companion_wallpaper`、`companion_ios_style`、`companion_peer_name`、`companion_peer_avatar`。宿主已经用了同名的键就在两个 JS 文件顶部改掉。
 
 **换色卡**：只改 `skin/bubble-colors.js` 里的 `BUBBLE_COLORS`，一行一个颜色（`id: ["名字", "六位色值"]`）。整颗气泡是由这一个基准色算出来的，别处不用动。
 
@@ -155,7 +167,8 @@ localStorage 键（都只在本机）：`companion_skin`、`companion_bubble_me`
 6. 透明度拉到 50%：能看见气泡后面的背景。
 7. 换一张壁纸：铺满聊天区；Reset 后恢复。
 8. 用了皮肤的顶栏和输入条的话：能正常发出消息；最后一条消息没有被输入条挡住；在 iPhone 的 Safari 里顶部刘海和底部横条没有挡住东西。
-9. 把 `<html>` 的 `data-skin` 属性删掉：页面回到宿主原来的样子。
+9. 用了自带设置页的话：在 Contact › Nickname 里打一个昵称，顶栏马上变，刷新后还在，清空后回到原来的名字；选一张头像，左边那一格换成这张图，Delete Photo 后恢复。
+10. 把 `<html>` 的 `data-skin` 属性删掉：页面回到宿主原来的样子。
 
 ## 常见症状
 
@@ -180,6 +193,6 @@ localStorage 键（都只在本机）：`companion_skin`、`companion_bubble_me`
 
 ## 这份说明验证到了哪一步
 
-- 验证过：在 `examples/plain-chat/` 那个陌生的聊天页上，按上面的步骤（接法 A + 步骤 4 + 步骤 5 + 路一）装成功——顶栏、气泡、输入条、用输入条发消息、换色、设置页、选色页都正常。
+- 验证过：在 `examples/plain-chat/` 那个陌生的聊天页上，按上面的步骤（接法 A + 步骤 4 + 步骤 5 + 路一）装成功——顶栏、气泡、输入条、用输入条发消息、换色、设置页、选色页、在设置页里改对方的昵称、换头像都正常。
 - 验证过：本仓库的 demo 在 Chrome 里的各个页面。
 - **没有验证**：真机 iPhone Safari、宿主是 React / Vue 这类框架（原理一样：在组件里把 class 补上）、Shadow DOM、以及任何带后端的真实前端。在这些情况下遇到这页没写到的问题，请如实告诉你的主人，不要硬凑。

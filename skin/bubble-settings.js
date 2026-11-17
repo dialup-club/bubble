@@ -1,4 +1,4 @@
-/* Dialup Club Bubble — 设置里的几样界面：气泡颜色（选色页）、透明度、壁纸、聊天方式
+/* Dialup Club Bubble — 设置里的几样界面：对方的昵称和头像、气泡颜色（选色页）、透明度、壁纸、聊天方式
    ─────────────────────────────────────────────────────────────
    依赖：先加载 bubble-colors.js（色卡、画法、读写选择、applyBubbleColors / applyWallpaper 都在那里）；样式在 ios4-settings.css。
    这个文件只做一件事：把页面上已有的几个元素接上——找不到某个元素就跳过那一项，不会报错。
@@ -9,7 +9,9 @@
      #wallPanel                           壁纸页（和选色页一样是一块 .profile-panel）；设置页里放一个 data-skin-open="wallPanel" 的入口
      #wallGrid / #wallName                壁纸页里自带壁纸的小图格子；设置页入口那一行右边显示的当前壁纸名字
      #wallFile / #wallReset / #wallVal / #wallHint   壁纸：选图、恢复默认、当前状态、说明文字
-     #chatStyleSeg / #chatStyleHint       聊天方式：分段开关（两个 button[data-val="text|near"]）和下面那行说明 */
+     #chatStyleSeg / #chatStyleHint       聊天方式：分段开关（两个 button[data-val="text|near"]）和下面那行说明
+     #peerNameInput / #peerName           对方的昵称：设置页里那一行输入框；顶栏中间显示名字的元素
+     #peerAvatarBox / #peerAvatarFile / #peerAvatarReset   对方的头像：设置页里那一格、选图、删掉 */
 (function(){
 "use strict";
 const $ = (s) => document.querySelector(s);
@@ -227,6 +229,84 @@ if (chatStyleSeg) chatStyleSeg.addEventListener("click", (e) => {
   syncChatStyle();
 });
 
+/* ── 对方的名字（设置页「Contact」› Nickname）──
+   顶栏中间那个名字（#peerName）可以由用户自己改：在 Nickname 那一行直接打字，马上生效，存 localStorage（companion_peer_name），只在本机。
+   留空 = 用宿主原来写在 #peerName 里的名字（输入框里灰色的那个）。
+   用户起了名字以后，宿主再往 #peerName 里写别的也会被换回用户起的那个，所以宿主不用为它多写代码；
+   宿主想知道现在显示的是什么（比如告诉模型「她叫你什么」），用 window.DialupBubble.peerName()。 */
+const PEER_NAME_KEY = "companion_peer_name";
+const peerNameInput = $("#peerNameInput");
+let hostPeerName = ($("#peerName") && $("#peerName").textContent || "").trim();
+function customPeerName(){ try{ return (localStorage.getItem(PEER_NAME_KEY) || "").trim(); }catch(_){ return ""; } }
+function peerName(){ return customPeerName() || hostPeerName; }
+function syncPeerName(){
+  const el = $("#peerName"), custom = customPeerName();
+  if (el){
+    const cur = el.textContent.trim();
+    if (custom && cur !== custom){ hostPeerName = cur; el.textContent = custom; }   // 宿主刚写了它自己的名字：记下来当默认，再换回用户起的
+    else if (!custom) hostPeerName = cur;
+  }
+  if (peerNameInput){
+    peerNameInput.placeholder = hostPeerName || "♡";
+    if (document.activeElement !== peerNameInput) peerNameInput.value = custom;
+  }
+}
+function setPeerName(v){
+  v = Array.from(String(v == null ? "" : v).replace(/\s+/g, " ").trim()).slice(0, 24).join("");
+  try{ if (v) localStorage.setItem(PEER_NAME_KEY, v); else localStorage.removeItem(PEER_NAME_KEY); }catch(_){}
+  const el = $("#peerName");
+  if (el && (v || hostPeerName) && el.textContent !== (v || hostPeerName)) el.textContent = v || hostPeerName;
+  syncPeerName();
+}
+if (peerNameInput){
+  peerNameInput.addEventListener("input", (e) => { if (!e.isComposing) setPeerName(peerNameInput.value); });   // 拼音还没选字的时候先不存
+  peerNameInput.addEventListener("compositionend", () => setPeerName(peerNameInput.value));
+  peerNameInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing){ e.preventDefault(); peerNameInput.blur(); } });
+  peerNameInput.addEventListener("blur", () => { setPeerName(peerNameInput.value); peerNameInput.value = customPeerName(); });
+}
+(function watchPeerName(){
+  const el = $("#peerName");
+  if (!el || !window.MutationObserver) return;
+  new MutationObserver(syncPeerName).observe(el.parentNode || el, { childList:true, characterData:true, subtree:true });
+})();
+syncPeerName();
+
+/* ── 对方的头像（设置页「Contact」左边那一格 / Choose Photo）──
+   从自己设备里挑一张图：在浏览器里裁成正方形、缩到 256、转成 JPEG 后存进 localStorage（companion_peer_avatar），不发给任何服务器。
+   老 iPhone 的「信息」聊天页里本来没有头像，所以皮肤只把它显示在设置页这一格里；另外挂两样东西给宿主用：
+   <html> 上的 CSS 变量 --peer-avatar（一个 url(...)）和属性 data-avatar="on"；宿主页面里任何带 data-skin-avatar 的元素也会被铺上这张图。
+   宿主想直接拿图：window.DialupBubble.avatar() 返回 data URL（没选 = ""）。 */
+const PEER_AVATAR_KEY = "companion_peer_avatar";
+const peerAvatarBox = $("#peerAvatarBox"), peerAvatarFile = $("#peerAvatarFile"), peerAvatarReset = $("#peerAvatarReset");
+function peerAvatar(){ try{ const v = localStorage.getItem(PEER_AVATAR_KEY) || ""; return v.indexOf("data:image/") === 0 ? v : ""; }catch(_){ return ""; } }
+function applyPeerAvatar(){
+  const v = peerAvatar(), img = v ? 'url("' + v + '")' : "", root = document.documentElement;
+  if (v){ root.style.setProperty("--peer-avatar", img); root.setAttribute("data-avatar", "on"); }
+  else { root.style.removeProperty("--peer-avatar"); root.removeAttribute("data-avatar"); }
+  document.querySelectorAll("[data-skin-avatar]").forEach((el) => { el.style.backgroundImage = img; });
+  if (peerAvatarBox){ peerAvatarBox.style.backgroundImage = img; peerAvatarBox.classList.toggle("has", !!v); }
+  if (peerAvatarReset) peerAvatarReset.hidden = !v;
+}
+function setAvatarFromFile(file){
+  if (!file || !/^image\//.test(file.type)) return;
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    const side = Math.min(img.naturalWidth, img.naturalHeight), out = Math.max(1, Math.min(256, side));
+    const c = document.createElement("canvas");
+    c.width = c.height = out;
+    c.getContext("2d").drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, out, out);   // 取正中间的正方形
+    URL.revokeObjectURL(url);
+    try{ localStorage.setItem(PEER_AVATAR_KEY, c.toDataURL("image/jpeg", 0.86)); }catch(_){}
+    applyPeerAvatar();
+  };
+  img.onerror = () => URL.revokeObjectURL(url);
+  img.src = url;
+}
+function resetAvatar(){ try{ localStorage.removeItem(PEER_AVATAR_KEY); }catch(_){} applyPeerAvatar(); }
+if (peerAvatarFile) peerAvatarFile.addEventListener("change", () => { setAvatarFromFile(peerAvatarFile.files && peerAvatarFile.files[0]); peerAvatarFile.value = ""; });
+if (peerAvatarReset) peerAvatarReset.addEventListener("click", resetAvatar);
+applyPeerAvatar();
+
 /* ── 给宿主用的入口 ──
    1) 不写代码的接法：任何元素加 data-skin-open="profilePanel"（或别的面板 id），点它就把那块面板滑出来；
       面板里任何元素加 data-skin-close，点它就收回去。
@@ -258,8 +338,10 @@ window.DialupBubble = {
   imageFor: bubbleImgFor,                                     // 某个选择画出来的那张气泡图（CSS 的 url(...)），给宿主自己画小色块用
   setWallpaperFromFile, resetWallpaper: () => { try{ localStorage.removeItem(WALLPAPER_KEY); }catch(_){} applyWallpaper(); syncWallRows(); },
   chatStyle: iosStyle, textingOn,                             // 聊天方式开关的当前值
+  peerName, setPeerName,                                      // 顶栏上对方的名字（昵称）：现在显示的 / 改掉（传 "" = 回到宿主原来的）
+  avatar: peerAvatar, setAvatarFromFile, resetAvatar,         // 对方的头像：data URL（没选 = ""）/ 从一个图片文件设 / 删掉
   openPicker: openBubblePanel, closePicker: closeBubblePanel, openPanel, closePanel,
-  refresh: () => { applyBubbleColors(); applyWallpaper(); syncBubbleRows(); syncWallRows(); }
+  refresh: () => { applyBubbleColors(); applyWallpaper(); syncBubbleRows(); syncWallRows(); syncPeerName(); applyPeerAvatar(); }
 };
 
 })();

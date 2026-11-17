@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="../../skin/ios4-settings.css">
 </head>
 <body>
-<header class="bar">Chat with Alex</header>
+<header class="bar">Chat with ♡</header>
 
 <!-- 皮肤的顶栏：结构照抄自本仓库 index.html。右上角「设置」加了 data-skin-open，点了滑出皮肤的设置页 -->
 <header class="topbar">
@@ -38,7 +38,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
   <div class="peerpill">
-    <span class="name" id="peerName">Alex</span>
+    <span class="name" id="peerName">♡</span>
     <span class="status" id="status"></span>
   </div>
   <div class="header-actions" aria-label="更多操作">
@@ -153,7 +153,7 @@ addWhen("Today 09:41");
 
 <!-- ▲ 皮肤 · 选色页 结束 -->
 
-<!-- ▼ 皮肤 · 设置页（Bubble Color、Wallpaper、聊天方式三组）：可以整块照抄，也可以只把里面的 <section> 搬进宿主自己的设置页（外面要有一层 id="profilePanel"） -->
+<!-- ▼ 皮肤 · 设置页（Contact、Bubble Color、Wallpaper、聊天方式四组）：可以整块照抄，也可以只把里面的 <section> 搬进宿主自己的设置页（外面要有一层 id="profilePanel"） -->
 <div class="profile-panel hidden" id="profilePanel" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
   <div class="profile-page">
     <div class="profile-topbar">
@@ -163,6 +163,28 @@ addWhen("Today 09:41");
       <h2 id="profileTitle" class="hidden">设置</h2>
     </div>
     <div class="profile-scroll">
+      <section class="settings-card contact-card" data-skin-only="ios4">
+        <div class="settings-label">Contact</div>
+        <div class="ct-card">
+          <label class="ct-photo" id="peerAvatarBox" for="peerAvatarFile" aria-label="Choose Photo"><span>add<br>photo</span></label>
+          <div class="bc-cells">
+            <label class="bc-row bc-edit">
+              <span class="bc-k">Nickname</span>
+              <input class="bc-input" id="peerNameInput" type="text" maxlength="24" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Nickname">
+            </label>
+            <label class="bc-row wp-pick">
+              <span class="bc-k">Choose Photo</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              <input type="file" accept="image/*" id="peerAvatarFile" class="wp-file" aria-label="Choose Photo">
+            </label>
+            <button class="bc-row" type="button" id="peerAvatarReset" hidden>
+              <span class="bc-k">Delete Photo</span>
+            </button>
+          </div>
+        </div>
+        <div class="push-hint">给 TA 起一个昵称、换一张头像。都只存在你这台设备的浏览器里，留空就用原来的。</div>
+      </section>
+
       <section class="settings-card bubble-color-card" data-skin-only="ios4">
         <div class="settings-label">Bubble Color</div>
         <div class="bc-cells">

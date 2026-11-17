@@ -585,6 +585,86 @@
   font-size: 0;
 }
 
+/* ── 设置页里能直接打字的一行（Contact › Nickname）：左边粗体标签，右边靠右的蓝色输入 ── */
+:root[data-skin^="ios4"] :is(#profilePanel, #wallPanel) .bc-row.bc-edit{
+  cursor: text;
+}
+:root[data-skin^="ios4"] :is(#profilePanel, #wallPanel) .bc-row.bc-edit .bc-k{
+  flex: 0 0 auto;
+}
+:root[data-skin^="ios4"] :is(#profilePanel, #wallPanel) .bc-row.bc-edit:active{
+  background: transparent;
+}
+:root[data-skin^="ios4"] :is(#profilePanel, #wallPanel) .bc-row.bc-edit:active > .bc-k{
+  color: #000;
+}
+:root[data-skin^="ios4"] :is(#profilePanel, #wallPanel) .bc-input{
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0 2px 0 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font: 400 17px/1.2 "Helvetica Neue", Helvetica, Arial, var(--font-cn), sans-serif;
+  text-align: right;
+  color: var(--set-blue);
+  caret-color: #3b6cd8;
+}
+:root[data-skin^="ios4"] :is(#profilePanel, #wallPanel) .bc-row.bc-edit:active > .bc-input{
+  color: var(--set-blue);
+}
+:root[data-skin^="ios4"] :is(#profilePanel, #wallPanel) .bc-input::placeholder{
+  color: #b3b3b3;
+  opacity: 1;
+}
+
+/* ── Contact：左边一格头像（点它选图），右边一摞格子（Nickname / Choose Photo / Delete Photo），照老 iPhone 通讯录编辑页的摆法 ── */
+:root[data-skin^="ios4"] #profilePanel .ct-card{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+:root[data-skin^="ios4"] #profilePanel .ct-card > .bc-cells{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+:root[data-skin^="ios4"] #profilePanel .ct-photo{
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--set-line);
+  border-top-color: #abadb4;
+  border-bottom-color: #b4b8bf;
+  border-radius: 5px;
+  background: #fff center / cover no-repeat;
+  box-shadow: 0 1px 0 rgba(255,255,255,.45), inset 0 1px 2px rgba(0,0,0,.12);
+  font: 700 12px/14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-align: center;
+  color: var(--set-blue);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+:root[data-skin^="ios4"] #profilePanel .ct-photo:active{
+  filter: brightness(.85);
+}
+:root[data-skin^="ios4"] #profilePanel .ct-photo.has{
+  border-color: #7d8189;
+  box-shadow: 0 1px 2px rgba(0,0,0,.3);
+}
+:root[data-skin^="ios4"] #profilePanel .ct-photo.has > span{
+  display: none;
+}
+
 /* ── 壁纸：自带壁纸的小图格子 ── */
 :root[data-skin^="ios4"] #wallPanel .wp-grid{
   display: grid;
